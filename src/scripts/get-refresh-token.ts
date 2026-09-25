@@ -67,7 +67,7 @@ const server = createServer((req, res) => {
 
     const error = url.searchParams.get('error');
     if (error) {
-      res.end(`Prayer Times: authorization failed (${error}). You can close this tab.`);
+      res.end(`Muwaqqit: authorization failed (${error}). You can close this tab.`);
       console.error(`\nAuthorization failed: ${error}\n`);
       server.close();
       process.exitCode = 1;
@@ -77,7 +77,7 @@ const server = createServer((req, res) => {
     const code = url.searchParams.get('code');
     if (!code) {
       res.statusCode = 400;
-      res.end('Prayer Times: no authorization code in the request.');
+      res.end('Muwaqqit: no authorization code in the request.');
       return;
     }
 
@@ -102,7 +102,7 @@ const server = createServer((req, res) => {
       };
 
       if (!tokenRes.ok || !json.refresh_token || !json.access_token) {
-        res.end('Prayer Times: token exchange failed. Check the terminal.');
+        res.end('Muwaqqit: token exchange failed. Check the terminal.');
         console.error('\nToken exchange failed:', JSON.stringify(json, null, 2));
         console.error(
           '\nIf refresh_token is missing, remove the app at https://myaccount.google.com/permissions ' +
@@ -112,13 +112,13 @@ const server = createServer((req, res) => {
         return;
       }
       if (!json.scope?.split(' ').includes(CALENDAR_SCOPE)) {
-        res.end('Prayer Times: the calendar permission was not granted. Check the terminal.');
+        res.end('Muwaqqit: the calendar permission was not granted. Check the terminal.');
         console.error('\nThe calendar permission was not granted (was its checkbox left unticked?). Run `npm run auth` again.\n');
         process.exitCode = 1;
         return;
       }
 
-      res.end('Prayer Times: authorization complete. You can close this tab.');
+      res.end('Muwaqqit: authorization complete. You can close this tab.');
       console.log('Authorized.');
       // The token first: if the calendar step fails, the token is still usable.
       const lines = [`GOOGLE_REFRESH_TOKEN=${json.refresh_token}`];
@@ -133,7 +133,7 @@ const server = createServer((req, res) => {
       for (const l of lines) console.log(l);
       console.log('\nThen run `npm run check`.\n');
     } catch (err) {
-      res.end('Prayer Times: something failed. Check the terminal.');
+      res.end('Muwaqqit: something failed. Check the terminal.');
       console.error('\nError:', message(err));
       process.exitCode = 1;
     } finally {

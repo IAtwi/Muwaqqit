@@ -1,9 +1,14 @@
-# Prayer Times
+# Muwaqqit
 
 Keeps Beirut's prayer times in your Google Calendar. Every day gets three events, **Sobh**,
 **Zuhr** and **Maghrib**, each with a popup reminder 5 minutes before, taken from
 [Al-Manar's monthly prayer calendars](https://almanar.com.lb/salat/).
 
+A *muwaqqit* (مُوَقِّت) was a mosque's timekeeper: the astronomer who worked out the prayer
+times from the sun. This one reads the published timetable, checks it against the sun, fixes its
+misprints, and keeps your calendar on time.
+
+- **Takes no room.** Each event is a point in time with no duration: the reminder is the point.
 - **Always 60 days ahead.** A run syncs today and the next 59 days, then schedules itself for
   local midnight 30 days later. There are always at least 30 days of events waiting.
 - **Safe to re-run.** Events are matched by date and prayer: missing ones are created, ones moved
@@ -150,7 +155,7 @@ npm run dry      # a full sync that writes nothing, logging what it would do
 Node 22 is already installed there for Sluice. Then:
 
 ```bash
-git clone https://github.com/<you>/<repo>.git ~/prayer-times && cd ~/prayer-times
+git clone https://github.com/<you>/Muwaqqit.git ~/muwaqqit && cd ~/muwaqqit
 nano .env                 # the same four values as your local .env
 ./deploy.sh
 ```
@@ -159,7 +164,7 @@ nano .env                 # the same four values as your local .env
 deploy runs the first sync right away so you can watch it. The cron entry it adds is:
 
 ```cron
-0 * * * * cd "/home/<you>/prayer-times" && "/usr/bin/node" dist/main.js 2>&1 | /usr/bin/logger -t prayer-times
+0 * * * * cd "/home/<you>/muwaqqit" && "/usr/bin/node" dist/main.js 2>&1 | /usr/bin/logger -t muwaqqit
 ```
 
 Piping to `logger` sends the output to journald, which rotates itself. Without it cron tries to
@@ -174,7 +179,7 @@ unsynced), and that the app is allowed to send notifications.
 ### Updating the server
 
 ```bash
-cd ~/prayer-times && ./deploy.sh
+cd ~/muwaqqit && ./deploy.sh
 ```
 
 Cron never needs changing: it runs `dist/main.js`, which is rebuilt in place. `.env` and
@@ -219,8 +224,8 @@ Watching it:
 
 ```bash
 npm run status                       # next run, last run, last success
-journalctl -t prayer-times -f        # live
-less ~/prayer-times/logs/$(date +%F).log
+journalctl -t muwaqqit -f           # live
+less ~/muwaqqit/logs/$(date +%F).log
 ```
 
 **Never open a log file in a text editor** while it may be written: an editor writes its whole
@@ -239,7 +244,7 @@ buffer back on save and silently drops anything appended since. Use `less`, `tai
 | `npm run status` | next run, last run, last success |
 | `npm run check` | verify credentials, calendar access and the source |
 | `npm run auth` | one-time Google sign-in; prints the refresh token and creates the calendar |
-| `npm run selftest` | offline checks against real calendars in `fixtures/` (71 checks) |
+| `npm run selftest` | offline checks against real calendars in `fixtures/` (72 checks) |
 | `./deploy.sh` | the server install and update command |
 
 Flags: `--now`, `--dry-run`, `--times`, `--status`, `--check`, `--help`.

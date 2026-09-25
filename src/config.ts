@@ -1,7 +1,7 @@
 import type { PrayerKey } from './core/types.js';
 
 /**
- * Prayer Times global configuration.
+ * Muwaqqit global configuration.
  *
  * Everything tunable lives here. Only the Google credentials and the calendar id live in .env.
  * Rebuild (`npm run build`) after changing anything.
@@ -38,13 +38,15 @@ export const CONFIG = {
       { key: 'dhuhr', title: 'Zuhr prayer time', arabic: 'صلاة الظهر' },
       { key: 'maghrib', title: 'Maghrib prayer time', arabic: 'صلاة المغرب' },
     ] as { key: PrayerKey; title: string; arabic: string }[],
-    durationMinutes: 15,
+    /** 0 makes each event a point in time (it ends when it starts), the least room an event
+     *  can take: the reminder is what matters. Google still draws it as one short line. */
+    durationMinutes: 0,
     /** Popup reminder this many minutes before each event. */
     reminderMinutes: 5,
     /** Name of the Google calendar `npm run auth` creates. */
     calendarName: 'Prayer Times',
     /** Stamped on every event this tool creates, so it only ever touches its own events. */
-    appTag: 'prayer-times',
+    appTag: 'muwaqqit',
   },
 
   logs: {
@@ -62,7 +64,7 @@ export const CONFIG = {
     timeoutMs: 20000,
     retries: 2,
     retryDelayMs: 2000,
-    userAgent: 'Mozilla/5.0 (compatible; PrayerTimesSync/1.0)',
+    userAgent: 'Mozilla/5.0 (compatible; Muwaqqit/1.0)',
   },
 
   /** Paths, relative to the project root. */

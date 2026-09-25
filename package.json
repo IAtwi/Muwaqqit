@@ -1,8 +1,8 @@
 {
-  "name": "prayer-times",
+  "name": "muwaqqit",
   "version": "1.0.0",
   "private": true,
-  "description": "Keeps Beirut prayer times (Sobh, Zuhr, Maghrib) from Al-Manar's monthly calendars in a Google Calendar, each with a reminder.",
+  "description": "Keeps Beirut's Sobh, Zuhr and Maghrib prayer times in Google Calendar, with a reminder before each, from Al-Manar's monthly calendars.",
   "type": "module",
   "engines": {
     "node": ">=20.6"

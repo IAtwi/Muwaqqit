@@ -114,7 +114,7 @@ function printStatus(state: State): void {
   else if (isDue(state.nextRunAt, new Date(now))) next = `${fullStamp(state.nextRunAt)} (due: the next hourly cron check runs it)`;
   else next = `${fullStamp(state.nextRunAt)} (in ${describeWait(Date.parse(state.nextRunAt) - now)})`;
 
-  console.log('\nPrayer Times');
+  console.log('\nMuwaqqit');
   console.log(`  next run      ${next}`);
   console.log(`  last run      ${state.lastRun ? describeRun(state.lastRun) : 'never'}`);
   console.log(`  last success  ${fullStamp(state.lastSuccessAt)}`);
@@ -212,7 +212,7 @@ async function check(): Promise<number> {
 
 function printHelp(): void {
   console.log(`
-Prayer Times - keeps Beirut prayer times in a Google Calendar, with reminders.
+Muwaqqit - keeps Beirut prayer times in a Google Calendar, with reminders.
 
   npm start          cron entry: runs a sync only when one is due, otherwise exits silently
   npm run sync       sync now, whatever the schedule (with the usual retry and rescheduling)
@@ -262,6 +262,6 @@ async function main(): Promise<number> {
 main()
   .then((code) => process.exit(code))
   .catch((err: unknown) => {
-    console.error('prayer-times: fatal', err);
+    console.error('muwaqqit: fatal', err);
     process.exit(1);
   });

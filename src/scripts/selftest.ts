@@ -141,25 +141,26 @@ const sobh = prayer(octRes, '2026-10-26', 'fajr') as PrayerTime;
 const body = desiredEvent(sobh);
 check('title', body.summary, 'Sobh prayer time');
 check('start, with the Beirut offset', body.start.dateTime, '2026-10-26T04:38:00+02:00');
-check('15 minutes long', body.end.dateTime, '2026-10-26T04:53:00+02:00');
+check('a point in time: ends when it starts', body.end.dateTime, '2026-10-26T04:38:00+02:00');
 check('popup 5 minutes before', body.reminders, { useDefault: false, overrides: [{ method: 'popup', minutes: 5 }] });
-check('tagged as ours', body.extendedProperties?.private, { app: 'prayer-times', date: '2026-10-26', prayer: 'fajr' });
+check('tagged as ours', body.extendedProperties?.private, { app: 'muwaqqit', date: '2026-10-26', prayer: 'fajr' });
 const existing: ApiEvent = {
   id: 'abc',
   summary: body.summary,
   description: body.description,
   start: { dateTime: '2026-10-26T05:38:00+03:00' }, // the same instant, written in another offset
-  end: { dateTime: '2026-10-26T05:53:00+03:00' },
+  end: { dateTime: '2026-10-26T05:38:00+03:00' },
   reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 5 }] },
 };
 check('same instant in another offset: unchanged', differences(existing, body), []);
 check('moved by hand: time differs', differences({ ...existing, start: { dateTime: '2026-10-26T05:00:00+02:00' } }, body).map((d) => d.field), ['time']);
 check('... described old to new', differences({ ...existing, start: { dateTime: '2026-10-26T05:00:00+02:00' } }, body)[0]?.text, 'time 05:00 -> 04:38');
+check('a longer event is shortened', differences({ ...existing, end: { dateTime: '2026-10-26T05:53:00+03:00' } }, body).map((d) => d.field), ['duration']);
 check('reminder removed by hand', differences({ ...existing, reminders: { useDefault: true } }, body).map((d) => d.field), ['reminder']);
 check('renamed by hand', differences({ ...existing, summary: 'x' }, body).map((d) => d.field), ['title']);
 
 console.log('\nstate and lock');
-const tmp = mkdtempSync(join(tmpdir(), 'prayer-times-'));
+const tmp = mkdtempSync(join(tmpdir(), 'muwaqqit-'));
 CONFIG.paths.state = join(tmp, 'state.json');
 CONFIG.paths.lock = join(tmp, '.run.lock');
 check('no state yet', loadState(), {});

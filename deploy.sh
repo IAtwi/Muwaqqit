@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Install or update Prayer Times on the server. One command, safe to re-run.
+# Install or update Muwaqqit on the server. One command, safe to re-run.
 #
 #   ./deploy.sh
 #
@@ -32,12 +32,12 @@ echo "==> building"
 npm run build
 
 echo "==> self test"
-if ! npm run --silent selftest > /tmp/prayer-times-selftest.log 2>&1; then
-  tail -n 20 /tmp/prayer-times-selftest.log
-  echo "Self test FAILED (full output in /tmp/prayer-times-selftest.log). Not continuing."
+if ! npm run --silent selftest > /tmp/muwaqqit-selftest.log 2>&1; then
+  tail -n 20 /tmp/muwaqqit-selftest.log
+  echo "Self test FAILED (full output in /tmp/muwaqqit-selftest.log). Not continuing."
   exit 1
 fi
-tail -n 1 /tmp/prayer-times-selftest.log
+tail -n 1 /tmp/muwaqqit-selftest.log
 
 # No runtime dependencies: TypeScript is only needed to compile, so node_modules can go.
 echo "==> pruning node_modules"
@@ -46,10 +46,10 @@ rm -rf node_modules
 # Hourly is enough: runs are due at local midnight, and the hourly check also catches up a
 # run missed while the server was down. A check that finds nothing due exits silently.
 echo "==> cron"
-CRON_LINE="0 * * * * cd \"$DIR\" && \"$NODE\" dist/main.js 2>&1 | /usr/bin/logger -t prayer-times"
-if crontab -l 2>/dev/null | grep -Fq "logger -t prayer-times"; then
+CRON_LINE="0 * * * * cd \"$DIR\" && \"$NODE\" dist/main.js 2>&1 | /usr/bin/logger -t muwaqqit"
+if crontab -l 2>/dev/null | grep -Fq "logger -t muwaqqit"; then
   echo "cron entry already installed:"
-  crontab -l | grep -F "logger -t prayer-times"
+  crontab -l | grep -F "logger -t muwaqqit"
 else
   (crontab -l 2>/dev/null || true; echo "$CRON_LINE") | crontab -
   echo "cron entry installed:"

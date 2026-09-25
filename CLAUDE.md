@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Context for Claude Code working on Prayer Times. Read this before changing behaviour.
+Context for Claude Code working on Muwaqqit. Read this before changing behaviour.
 
 ## What this is
 
@@ -9,7 +9,11 @@ each event with a 5 minute popup reminder, from Al-Manar's monthly calendar PDFs
 same small Ubuntu 24 VPS as Sluice (a YouTube playlist tool) and a Python Discord bot, via an
 hourly cron check. Resources are tight, so lightness is a hard requirement, not a preference.
 
-Developed locally at `D:\Programming\VPS\Prayer Times`, pushed to GitHub, pulled on the VPS.
+The name: a muwaqqit (مُوَقِّت) was a mosque's timekeeper, the astronomer who worked out prayer
+times from the sun. The Google calendar it fills is still called "Prayer Times".
+
+Developed locally at `D:\Programming\VPS\Muwaqqit`, pushed to GitHub, pulled on the VPS into
+`~/muwaqqit`. Cron output goes to journald under the tag `muwaqqit`.
 Same stack and conventions as its sibling `D:\Programming\VPS\Sluice`.
 
 ## Architecture
@@ -124,9 +128,14 @@ Never log a bare `toISOString()`.
 **14. The window includes today.** A midnight run makes all of today's events upcoming. A manual
 run later in the day creates today's past events too, which is harmless.
 
+**15. Events are points in time (`durationMinutes: 0`).** They exist for their reminder, and the
+owner wants them to take the least room on the calendar. Google draws short events at a minimum
+height anyway, so nothing smaller is possible. Changing the duration patches existing events on
+the next run (the diff compares end instants).
+
 ## Invariants
 
-- Only events tagged `app=prayer-times` in the configured calendar are ever read or written.
+- Only events tagged `app=muwaqqit` in the configured calendar are ever read or written.
 - Deletion only happens for duplicates of one date and prayer, and for prayers removed from
   `CONFIG.events.prayers`, and only within the window being synced.
 - A day counts as synced only when all its configured prayers are in line. The run stops at the
@@ -143,7 +152,7 @@ run later in the day creates today's past events too, which is harmless.
 `npm run selftest` covers everything that needs no network or credentials: extraction and
 parsing of the three real PDFs in `fixtures/`, time fragments, clock detection, misprint repair
 (real and synthetic), timezone helpers across both 2026 clock changes, scheduling rules, event
-diffing, state, the lock and logging. 71 checks. `deploy.sh` runs it before touching cron.
+diffing, state, the lock and logging. 72 checks. `deploy.sh` runs it before touching cron.
 
 `fixtures/` are real Al-Manar files, each kept for a quirk:
 - `beirut-2026-10.pdf`: the Maghrib misprint on the 28th, the late clock change.
