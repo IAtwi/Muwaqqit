@@ -5,4 +5,5 @@ state.json
 state.json.tmp
 .run.lock
 .env
+.env.tmp
 *.local

@@ -152,7 +152,7 @@ the next run (the diff compares end instants).
 `npm run selftest` covers everything that needs no network or credentials: extraction and
 parsing of the three real PDFs in `fixtures/`, time fragments, clock detection, misprint repair
 (real and synthetic), timezone helpers across both 2026 clock changes, scheduling rules, event
-diffing, state, the lock and logging. 72 checks. `deploy.sh` runs it before touching cron.
+diffing, state, the lock and logging. 73 checks. `deploy.sh` runs it before touching cron.
 
 `fixtures/` are real Al-Manar files, each kept for a quirk:
 - `beirut-2026-10.pdf`: the Maghrib misprint on the 28th, the late clock change.

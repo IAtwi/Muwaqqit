@@ -1,12 +1,13 @@
 import { createServer } from 'node:http';
 import { CONFIG } from '../config.js';
-import { requireEnv } from '../core/env.js';
+import { requireEnv, saveEnv } from '../core/env.js';
 import { CALENDAR_SCOPE, createCalendar, getCalendar, setAccessToken } from '../core/google.js';
 import { message } from '../core/http.js';
 
 /**
  * One-time local OAuth flow. Run this on your own machine (it needs a browser), not the VPS.
- * Prints GOOGLE_REFRESH_TOKEN, and GOOGLE_CALENDAR_ID for a calendar it creates.
+ * Saves GOOGLE_REFRESH_TOKEN, and GOOGLE_CALENDAR_ID for a calendar it creates, into .env.
+ * The token is only ever shown masked, so it never has to pass through a screen or a chat.
  *
  * The calendar is created here rather than by the sync because the narrow scope used
  * (calendar.app.created) cannot list calendars, so there would be no way to find it again
@@ -37,14 +38,15 @@ console.log('   You will see a "Google hasn\'t verified this app" screen. Click 
 console.log('   "Go to ... (unsafe)". That is expected for a personal app.');
 console.log(`\n2. Waiting for the redirect on ${REDIRECT_URI} ...\n`);
 
-async function calendarLines(accessToken: string): Promise<string[]> {
+/** The calendar id to save, or undefined when the one already in .env is kept. */
+async function ensureCalendar(accessToken: string): Promise<string | undefined> {
   setAccessToken(accessToken);
   const existing = process.env.GOOGLE_CALENDAR_ID;
   if (existing) {
     const found = await getCalendar(existing);
     if (found) {
       console.log(`Keeping the existing calendar "${found.summary ?? existing}" from .env.`);
-      return [];
+      return undefined;
     }
     console.log(`GOOGLE_CALENDAR_ID in .env (${existing}) is not reachable with this account; creating a new calendar.`);
   }
@@ -53,7 +55,11 @@ async function calendarLines(accessToken: string): Promise<string[]> {
     `${CONFIG.source.label} prayer times from Al-Manar's monthly calendars, kept in sync automatically.`,
   );
   console.log(`Created the calendar "${created.summary ?? CONFIG.events.calendarName}".`);
-  return [`GOOGLE_CALENDAR_ID=${created.id}`];
+  return created.id;
+}
+
+function mask(secret: string): string {
+  return `${secret.slice(0, 6)}...${secret.slice(-4)} (${secret.length} characters)`;
 }
 
 const server = createServer((req, res) => {
@@ -120,18 +126,26 @@ const server = createServer((req, res) => {
 
       res.end('Muwaqqit: authorization complete. You can close this tab.');
       console.log('Authorized.');
-      // The token first: if the calendar step fails, the token is still usable.
-      const lines = [`GOOGLE_REFRESH_TOKEN=${json.refresh_token}`];
+      // The token first: if the calendar step fails, the token is still saved and usable.
+      const values: Record<string, string> = { GOOGLE_REFRESH_TOKEN: json.refresh_token };
       try {
-        lines.push(...(await calendarLines(json.access_token)));
+        const calendarId = await ensureCalendar(json.access_token);
+        if (calendarId) values.GOOGLE_CALENDAR_ID = calendarId;
       } catch (err) {
         console.error(`\nCould not set up the calendar: ${message(err)}`);
         console.error('Fix that, then run `npm run auth` again.');
         process.exitCode = 1;
       }
-      console.log('\n=== add these lines to .env (replace any older values) ===\n');
-      for (const l of lines) console.log(l);
-      console.log('\nThen run `npm run check`.\n');
+      try {
+        saveEnv(values);
+        console.log('\nSaved to .env:');
+        console.log(`  GOOGLE_REFRESH_TOKEN  ${mask(values.GOOGLE_REFRESH_TOKEN as string)}`);
+        if (values.GOOGLE_CALENDAR_ID) console.log(`  GOOGLE_CALENDAR_ID    ${values.GOOGLE_CALENDAR_ID}`);
+        console.log('\nNext: `npm run check`. The server needs the same four .env values.\n');
+      } catch (err) {
+        console.error(`\nCould not write .env (${message(err)}). Add these lines to it by hand:\n`);
+        for (const [key, value] of Object.entries(values)) console.log(`${key}=${value}`);
+      }
     } catch (err) {
       res.end('Muwaqqit: something failed. Check the terminal.');
       console.error('\nError:', message(err));

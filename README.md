@@ -134,12 +134,13 @@ Sign in with **the Gmail account whose calendar should get the events**. You wil
 *"Google hasn't verified this app"* (under the app name you gave the Sluice project). Click
 **Advanced**, then **Go to ... (unsafe)**. That is expected for a personal app.
 
-`npm run auth` creates a calendar named **Prayer Times** in that account, then prints two lines
-to add to `.env`:
+`npm run auth` creates a calendar named **Prayer Times** in that account, then saves the two
+remaining values into `.env` itself, showing the token only masked:
 
 ```
-GOOGLE_REFRESH_TOKEN=...
-GOOGLE_CALENDAR_ID=...@group.calendar.google.com
+Saved to .env:
+  GOOGLE_REFRESH_TOKEN  1//0gA...x9Qw (103 characters)
+  GOOGLE_CALENDAR_ID    ...@group.calendar.google.com
 ```
 
 Then:
@@ -155,8 +156,8 @@ npm run dry      # a full sync that writes nothing, logging what it would do
 Node 22 is already installed there for Sluice. Then:
 
 ```bash
-git clone https://github.com/<you>/Muwaqqit.git ~/muwaqqit && cd ~/muwaqqit
-nano .env                 # the same four values as your local .env
+git clone https://github.com/IAtwi/Muwaqqit.git ~/muwaqqit && cd ~/muwaqqit
+nano .env                 # the same four lines as your local .env
 ./deploy.sh
 ```
 
@@ -244,7 +245,7 @@ buffer back on save and silently drops anything appended since. Use `less`, `tai
 | `npm run status` | next run, last run, last success |
 | `npm run check` | verify credentials, calendar access and the source |
 | `npm run auth` | one-time Google sign-in; prints the refresh token and creates the calendar |
-| `npm run selftest` | offline checks against real calendars in `fixtures/` (72 checks) |
+| `npm run selftest` | offline checks against real calendars in `fixtures/` (73 checks) |
 | `./deploy.sh` | the server install and update command |
 
 Flags: `--now`, `--dry-run`, `--times`, `--status`, `--check`, `--help`.

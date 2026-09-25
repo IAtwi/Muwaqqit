@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { CONFIG } from '../config.js';
 import { joinTimeFragments, parseCalendar } from '../core/calendar.js';
+import { saveEnv } from '../core/env.js';
 import { desiredEvent, differences } from '../core/events.js';
 import type { ApiEvent } from '../core/google.js';
 import { dateStamp, Logger, pruneOldLogs } from '../core/logger.js';
@@ -176,6 +177,16 @@ releaseLock();
 writeFileSync(CONFIG.paths.lock, `99999999 ${new Date().toISOString()}\n`);
 check('lock left by a dead process is taken over', acquireLock(), true);
 releaseLock();
+
+console.log('\n.env writing');
+const envFile = join(tmp, '.env');
+writeFileSync(envFile, '# a comment\nGOOGLE_CLIENT_ID=abc\nGOOGLE_REFRESH_TOKEN=\n\n');
+saveEnv({ GOOGLE_REFRESH_TOKEN: 'tok', GOOGLE_CALENDAR_ID: 'cal@group' }, envFile);
+check(
+  'replaces in place, appends new keys, keeps the rest',
+  readFileSync(envFile, 'utf8'),
+  '# a comment\nGOOGLE_CLIENT_ID=abc\nGOOGLE_REFRESH_TOKEN=tok\nGOOGLE_CALENDAR_ID=cal@group\n',
+);
 
 console.log('\nlogging');
 CONFIG.logs.dir = join(tmp, 'logs');

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 let loaded = false;
@@ -23,6 +23,32 @@ export function loadEnv(file = '.env'): void {
     // Real environment variables win over the file.
     if (process.env[key] === undefined) process.env[key] = value;
   }
+}
+
+/**
+ * Sets keys in the .env file: an existing `KEY=` line is replaced in place, a new key is
+ * appended, and everything else (comments, other keys) is kept. Written atomically.
+ * Used by `npm run auth`, so a refresh token never has to be copied by hand.
+ */
+export function saveEnv(values: Record<string, string>, file = '.env'): void {
+  const path = resolve(process.cwd(), file);
+  const pending = new Map(Object.entries(values));
+  const lines = existsSync(path) ? readFileSync(path, 'utf8').split(/\r?\n/) : [];
+  const out = lines.map((line) => {
+    const eq = line.indexOf('=');
+    const key = eq > 0 && !line.trimStart().startsWith('#') ? line.slice(0, eq).trim() : '';
+    const value = pending.get(key);
+    if (value === undefined) return line;
+    pending.delete(key);
+    return `${key}=${value}`;
+  });
+  while (out.length > 0 && out[out.length - 1] === '') out.pop();
+  for (const [key, value] of pending) out.push(`${key}=${value}`);
+
+  const tmp = `${path}.tmp`;
+  writeFileSync(tmp, `${out.join('\n')}\n`, 'utf8');
+  renameSync(tmp, path);
+  for (const [key, value] of Object.entries(values)) process.env[key] = value;
 }
 
 export function requireEnv(key: string): string {
