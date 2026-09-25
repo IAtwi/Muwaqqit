@@ -1,0 +1,26 @@
+{
+  "name": "prayer-times",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Keeps Beirut prayer times (Sobh, Zuhr, Maghrib) from Al-Manar's monthly calendars in a Google Calendar, each with a reminder.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "sync": "node dist/main.js --now",
+    "dry": "node dist/main.js --dry-run",
+    "times": "node dist/main.js --times",
+    "status": "node dist/main.js --status",
+    "check": "node dist/main.js --check",
+    "auth": "node dist/scripts/get-refresh-token.js",
+    "selftest": "node dist/scripts/selftest.js",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "typescript": "^5.6.3"
+  }
+}

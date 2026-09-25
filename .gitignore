@@ -1,0 +1,8 @@
+node_modules/
+dist/
+logs/
+state.json
+state.json.tmp
+.run.lock
+.env
+*.local
