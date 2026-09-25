@@ -99,7 +99,6 @@ export async function syncWindow(today: string, log: Logger, dryRun: boolean): P
   log.info(`found ${existing.length} existing event(s) from ${since} on`);
 
   const wanted = new Set<string>(CONFIG.events.prayers.map((p) => p.key));
-  const verb = dryRun ? 'would ' : '';
 
   for (const date of dates) {
     const blocked = blocker(date);
@@ -110,24 +109,24 @@ export async function syncWindow(today: string, log: Logger, dryRun: boolean): P
       break;
     }
 
-    const changes: string[] = [];
+    const changes: DayChanges = { created: [], updated: [], removed: [] };
     try {
       for (const prayer of prayers) {
         const name = PRAYER_NAMES[prayer.prayer];
         const desired = desiredEvent(prayer);
         const [keep, ...extra] = byKey.get(eventKey(date, prayer.prayer)) ?? [];
-        const flag = prayer.note ? ' (corrected, see event note)' : '';
+        const mark = prayer.note ? '*' : '';
 
         for (const duplicate of extra) {
           if (!dryRun) await deleteEvent(calendarId, duplicate.id);
           stats.removed++;
-          changes.push(`${verb}removed a duplicate ${name}`);
+          changes.removed.push(`a duplicate ${name}`);
         }
 
         if (!keep) {
           if (!dryRun) await insertEvent(calendarId, desired);
           stats.created++;
-          changes.push(`${verb}created ${name} ${localClock(prayer.at)}${flag}`);
+          changes.created.push(`${name} ${localClock(prayer.at)}${mark}`);
           continue;
         }
 
@@ -138,7 +137,7 @@ export async function syncWindow(today: string, log: Logger, dryRun: boolean): P
         }
         if (!dryRun) await patchEvent(calendarId, keep.id, patchBody(desired));
         stats.updated++;
-        changes.push(`${verb}updated ${name}: ${diff.map((d) => d.text).join(', ')}${flag}`);
+        changes.updated.push(`${name}${mark} (${diff.map((d) => d.text).join(', ')})`);
       }
 
       // Events for prayers no longer configured (the prayer list was edited).
@@ -147,19 +146,43 @@ export async function syncWindow(today: string, log: Logger, dryRun: boolean): P
         if (wanted.has(prayer)) continue;
         if (!dryRun) await deleteEvent(calendarId, event.id);
         stats.removed++;
-        changes.push(`${verb}removed ${PRAYER_NAMES[prayer as PrayerKey] ?? prayer} (no longer configured)`);
+        changes.removed.push(`${PRAYER_NAMES[prayer as PrayerKey] ?? prayer} (no longer configured)`);
       }
     } catch (err) {
       stats.stoppedAt = date;
       stats.error = message(err);
-      if (changes.length > 0) log.info(`${date}  ${changes.join('; ')}`);
+      logDay(log, date, changes, dryRun);
       break;
     }
 
     stats.daysSynced++;
-    if (changes.length > 0) log.info(`${date}  ${changes.join('; ')}`);
-    else log.debug(`${date}  unchanged`);
+    if (!logDay(log, date, changes, dryRun)) log.debug(`${date}  unchanged`);
   }
 
   return stats;
+}
+
+/** What changed on one day. A '*' on an entry marks a time that differs from the printed calendar. */
+interface DayChanges {
+  created: string[];
+  updated: string[];
+  removed: string[];
+}
+
+/**
+ * One line per day that changed, e.g.
+ * "2026-10-28  created Sobh 04:39, Zuhr 11:22, Maghrib 17:09* (* corrected, see the event's note)".
+ * Returns false when there was nothing to report.
+ */
+function logDay(log: Logger, date: string, c: DayChanges, dryRun: boolean): boolean {
+  const verb = (past: string, present: string) => (dryRun ? `would ${present}` : past);
+  const parts = [
+    c.created.length ? `${verb('created', 'create')} ${c.created.join(', ')}` : '',
+    c.updated.length ? `${verb('updated', 'update')} ${c.updated.join(', ')}` : '',
+    c.removed.length ? `${verb('removed', 'remove')} ${c.removed.join(', ')}` : '',
+  ].filter(Boolean);
+  if (parts.length === 0) return false;
+  const footnote = [...c.created, ...c.updated].some((s) => s.includes('*')) ? " (* corrected, see the event's note)" : '';
+  log.info(`${date}  ${parts.join('; ')}${footnote}`);
+  return true;
 }

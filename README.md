@@ -206,7 +206,7 @@ A typical scheduled run, 30 days after the previous one (shortened):
 00:00:03 WARN  2026-10-28 Maghrib: The calendar prints Maghrib as 18:09 on this day, far off the neighbouring days, ...
 00:00:03 INFO  google calendar "Prayer Times": ok
 00:00:04 INFO  found 93 existing event(s) from 2026-10-24 on
-00:00:04 INFO  2026-11-24  created Sobh 05:01; created Zuhr 11:24; created Maghrib 16:50
+00:00:04 INFO  2026-11-24  created Sobh 05:01, Zuhr 11:24, Maghrib 16:50
    ... one line per day that changed ...
 00:00:19 INFO  finished 2026-10-25 00:00:19 +02:00 in 18.2s: all good, 60/60 days synced (created 90, updated 0, unchanged 90, removed 0)
 00:00:19 INFO  next run: 2026-11-24 00:00:00 +02:00 (in 30 days)
