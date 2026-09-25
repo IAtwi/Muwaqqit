@@ -172,3 +172,8 @@ writes nothing.
 - Al-Manar's page showed Maghrib 18:48 on 25 September 2026 while the PDF says 18:50 (the PDF's
   trend is the smooth one). The page and the PDFs are not the same data; the PDFs are used.
 - `.gitattributes` forces LF so `deploy.sh` runs on Linux when committed from Windows.
+- On the Windows dev machine, git's bundled OpenSSL CA file rejects GitHub's certificate inside
+  Claude Code sessions. Push with `git -c http.sslBackend=schannel push` (Windows certificate
+  store); the user's git config is deliberately left unchanged.
+- Verified live on 25 September 2026: the first sync created 180 events, Google accepts
+  zero-length events, and a second pass found all 180 unchanged.
